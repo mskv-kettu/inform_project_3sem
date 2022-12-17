@@ -1,17 +1,8 @@
-from scripts.Node import Node
-import numpy as np
+from scripts.Body import Body
 
-
-#========= Только для 2у мерного пространства =========#
-###   Инициализация ?объекта?    ###
-
-with open('init_data.txt') as f:
-    dims = np.array(f.readline().split(), dtype=int)
-    print(dims)
-
-# Можно написать свой класс
-Body = [[Node() for i in range(dims[1])] for j in range(dims[0])]
+# Сетка
+Body = Body('init_data.txt', 1, 1, 1)
 print(Body)
-print(Body[0][0].sigma)
+print(Body.mp[0, 0, 0])
 
 # Здесь должно задаваться начальное напряжение
