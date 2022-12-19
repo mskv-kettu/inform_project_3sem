@@ -2,10 +2,9 @@ import numpy as np
 
 
 class Node:
-    def __init__(self):
-        self.sigma = np.zeros((), dtype=[('xx', np.float64), ('xy', np.float64), ('xz', np.float64),
-                                         ('yy', np.float64), ('yz', np.float64), ('zz', np.float64)])
-        self.V = np.zeros((), dtype=[('x', np.float64), ('y', np.float64), ('z', np.float64)])
-        self.mu = 0.5
-        self.rho = 1000
-        self.lmd = 0.5
+    def __init__(self, rh, nu, E):  # Параметры среды считываются из файла
+        self.sigma = np.zeros(6, dtype=np.float64)
+        self.V = np.zeros(3, dtype=np.float64)
+        self.mu = E / (2 * (1 + nu))
+        self.rho = rh
+        self.lmd = nu * E / ((1 + nu) * (1 - 2 * nu))
