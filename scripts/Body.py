@@ -11,6 +11,7 @@ class Body:
         self.mp = np.array([[[Node(*mods) for i in range(dims[2])] for j in range(dims[1])] for k in range(dims[0])])  # Трёхмерная Сетка
         self.M, self.N, self.K = np.shape(self.mp)[2], np.shape(self.mp)[1], np.shape(self.mp)[0]  # Размеры сетки
         self.h = np.array([X / self.M, Y / self.N, Z / self.K], dtype=np.float64)  # Размеры ячеек
+        self.dims = dims
 
     def Velocity(self, PrevStep, dt):  # Функция вычисления скоростей, передаём в неё карту на предыдущей итерации
         for k in range(1, self.K - 1):  # Только внутренние точки
