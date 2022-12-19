@@ -19,17 +19,16 @@ def visualize(argv, dims, body):
     n=len_x*len_y*len_z
 
     #скорости
-    v1 = np.ones([n], dtype=np.float64)
-    v2 = np.ones([n], dtype=np.float64)
-    v3 = np.ones([n], dtype=np.float64)
+    v1 = np.zeros([n], dtype=np.float64)
+    v2 = np.zeros([n], dtype=np.float64)
+    v3 = np.zeros([n], dtype=np.float64)
 
     for i in range(len_x):
         for j in range(len_y):
             for k in range(len_z):
-                v1[i] = body.mp[i, j, k].V[0]
-                v2[i] = body.mp[i, j, k].V[1]
-                v3[i] = body.mp[i, j, k].V[2]
-
+                v1[dims[1]*dims[2]*i+dims[2]*j+k] = body.mp[i, j, k].V[0]
+                v2[dims[1]*dims[2]*i+dims[2]*j+k] = body.mp[i, j, k].V[1]
+                v3[dims[1]*dims[2]*i+dims[2]*j+k] = body.mp[i, j, k].V[2]
     conRadius = 0.05
     sphereRadius = 0.06
     color_begin=(0.0, 0.0, 1.0)
@@ -73,36 +72,43 @@ def visualize(argv, dims, body):
     property2.SetSpecularPower(20)
 
     #создание моделей конусов и шаров
-    sphereActor1=[0]*n
+    sphereActor1 = [0]*n
     conActor = [0] * n
     for i in range(dims[0]):
         for j in range(dims[1]):
             for z in range(dims[2]):
-                sphereActor1[dims[0]*dims[1]*i+dims[2]*j+z] = vtkActor()
-                sphereActor1[dims[0]*dims[1]*i+dims[2]*j+z].SetMapper(sphereMapper)
-                sphereActor1[dims[0]*dims[1]*i+dims[2]*j+z].SetProperty(property1)
-                sphereActor1[dims[0]*dims[1]*i+dims[2]*j+z].SetPosition(i, j, z)
+                sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z] = vtkActor()
+                sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetMapper(sphereMapper)
+                sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetProperty(property1)
+                sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetPosition(i, j, z)
 
-                #if (v1[9 * i + 3 * j + z] ** 2 + v2[9 * i + 3 * j + z] ** 2 + v3[9 * i + 3 * j + z] ** 2 > 1):
-                #    sphereActor2[9 * i + 3 * j + z].GetProperty().SetColor(color_if_big_velocity)
 
-                con[dims[0]*dims[1]*i+dims[2]*j+z].SetHeight(((v1[dims[0]*dims[1]*i+dims[2]*j+z] ** 2 + v2[dims[0]*dims[1]*i+dims[2]*j+z] ** 2 + v3[
-                    dims[0]*dims[1]*i+dims[2]*j+z] ** 2) ** 0.5)*dt - 2 * sphereRadius)
-                con[dims[0]*dims[1]*i+dims[2]*j+z].SetDirection(v1[dims[0]*dims[1]*i+dims[2]*j+z], v2[dims[0]*dims[1]*i+dims[2]*j+z], v3[dims[0]*dims[1]*i+dims[2]*j+z])
-                conMapper[dims[0]*dims[1]*i+dims[2]*j+z].SetInputConnection(con[dims[0]*dims[1]*i+dims[2]*j+z].GetOutputPort())
+                if v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 <= 0.000001:
+                    continue
+                else:
+                    print(v1[dims[1]*dims[2]*i+dims[2]*j+z], v2[dims[1]*dims[2]*i+dims[2]*j+z], v3[dims[1]*dims[2]*i+dims[2]*j+z])
+                con[dims[1]*dims[2]*i+dims[2]*j+z].SetHeight(((v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[
+                    dims[1]*dims[2]*i+dims[2]*j+z] ** 2) ** 0.5)*dt)
+                con[dims[1]*dims[2]*i+dims[2]*j+z].SetDirection(v1[dims[1]*dims[2]*i+dims[2]*j+z], v2[dims[1]*dims[2]*i+dims[2]*j+z], v3[dims[1]*dims[2]*i+dims[2]*j+z])
+                conMapper[dims[1]*dims[2]*i+dims[2]*j+z].SetInputConnection(con[dims[1]*dims[2]*i+dims[2]*j+z].GetOutputPort())
 
-                conActor[dims[0]*dims[1]*i+dims[2]*j+z] = vtkActor()
-                conActor[dims[0]*dims[1]*i+dims[2]*j+z].SetMapper(conMapper[dims[0]*dims[1]*i+dims[2]*j+z])
-                conActor[dims[0]*dims[1]*i+dims[2]*j+z].SetProperty(property2)
-                conActor[dims[0]*dims[1]*i+dims[2]*j+z].SetPosition(i + v1[dims[0]*dims[1]*i+dims[2]*j+z]*dt / 2, j + v2[dims[0]*dims[1]*i+dims[2]*j+z]*dt / 2,
-                                                        z + v3[dims[0]*dims[1]*i+dims[2]*j+z]*dt / 2)
+                conActor[dims[1]*dims[2]*i+dims[2]*j+z] = vtkActor()
+                conActor[dims[1]*dims[2]*i+dims[2]*j+z].SetMapper(conMapper[dims[1]*dims[2]*i+dims[2]*j+z])
+                conActor[dims[1]*dims[2]*i+dims[2]*j+z].SetProperty(property2)
+                conActor[dims[1]*dims[2]*i+dims[2]*j+z].SetPosition(i + v1[dims[1]*dims[2]*i+dims[2]*j+z]*dt / 2, j + v2[dims[1]*dims[2]*i+dims[2]*j+z]*dt / 2,
+                                                        z + v3[dims[1]*dims[2]*i+dims[2]*j+z]*dt / 2)
+
+                if (v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 > 1):
+                    conActor[dims[1]*dims[2]*i+dims[2]*j+z].GetProperty().SetColor(color_if_big_velocity)
 
     ren1 = vtkRenderer()
     #добавление моделей на изображение
     for i in sphereActor1:
-        ren1.AddActor(i)
+        if i != 0:
+            ren1.AddActor(i)
     for i in conActor:
-        ren1.AddActor(i)
+        if i != 0:
+            ren1.AddActor(i)
     ren1.SetBackground(color_background)
 
     renWin = vtkRenderWindow()

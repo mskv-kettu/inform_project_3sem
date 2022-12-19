@@ -21,10 +21,10 @@ for i in range(N):
     Body.Tension(PrevStep, dt)
     # Смотрим за значениями в клетках
     visualize(sys.argv, Body.dims, Body)
-    print(Body.mp[10, 10, 10].V[0], Body.mp[10, 10, 10].V[1], Body.mp[10, 10, 10].V[2])
-    for u in Body.mp[10, 10, 10].sigma:
+    print(Body.mp[1, 2, 2].V[0], Body.mp[1, 2, 2].V[1], Body.mp[1, 2, 2].V[2])
+    '''for u in Body.mp[10, 10, 10].sigma:
         print(u, end=' ')
     print()
     for u in Body.mp[11, 10, 10].sigma:
         print(u, end=' ')
-    print()
+    print()'''
