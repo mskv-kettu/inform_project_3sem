@@ -6,7 +6,7 @@ from PIL import Image
 
 c = 3500  # Примерная скорость звука в меди в метрах на секунду
 A, B, C = 1, 1, 1  # Длина, ширина, высота образца в метрах
-N = 50  # Количество итераций
+N = 100 # Количество итераций
 
 # Сетка
 Body = Body('init_data.txt', 'material_data.txt', A, B, C)
@@ -18,22 +18,21 @@ V = 1e-3  # Константа скорости для отрисовки в з�
 
 for i in range(N):
     PrevStep = copy.deepcopy(Body.mp)
-    print(Body.mp[1, 1, 1].V[0], Body.mp[1, 1, 1].V[1], Body.mp[1, 1, 1].V[2])
     Body.GarmonicBorderTension(Ampl, omega, i * dt)
     Body.Velocity(PrevStep, dt)
     Body.Tension(PrevStep, dt)
     # Сохраняем кадры для дальнейшей визуализации
-    filename = r'C:\Users\vladi\Documents\PyCharmProjects\Python-3term\3term_Project\images\step%d.png' % i
+    filename = f'C:\\Users\\vladi\Documents\\PyCharmProjects\\Python-3term\\3term_Project\\images\\step{i}'
     init_visualize(sys.argv, Body.dims, Body, filename, V)
 
 # Создание гифки
 frames = []
 for n in range(N):
-    frame = Image.open(r'C:\Users\vladi\Documents\PyCharmProjects\Python-3term\3term_Project\images\step%d.png' % n)
+    frame = Image.open(f'C:\\Users\\vladi\Documents\\PyCharmProjects\\Python-3term\\3term_Project\\images\\step{n}')
     frames.append(frame)
 
 frames[0].save(
-    r'C:\Users\vladi\Documents\PyCharmProjects\Python-3term\3term_Project\result.gif',
+    'result252525(1).gif',
     save_all=True,
     append_images=frames[1:],
     optimize=True,

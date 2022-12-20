@@ -70,4 +70,4 @@ class Body:
         for j in range(1, self.N - 1):
             for i in range(1, self.M - 1):
                 self.mp[0, j, i].sigma[2] = A * np.cos(omega * t)  # Задаём нормальное напряжение на одной грани, ортог oz
-                #self.mp[j, 0, i].sigma[1] = -A * np.cos(omega * t + 10)  # Задаём нормальное напряжение на одной грани, ортог oy
+                self.mp[j, 0, i].sigma[1] = A * np.cos(omega * t)  # Задаём нормальное напряжение на одной грани, ортог oy

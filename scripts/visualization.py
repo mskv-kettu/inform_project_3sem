@@ -34,6 +34,7 @@ def init_visualize(argv, dims, body, filename, V):
     conRadius = 0.05
     sphereRadius = 0.06
     color_sphere = (0.0, 0.0, 1.0)
+    color_con = (1.0, 0.0, 0.0)
     color_background = (1, 1, 1)
     picture_size_x = 1200
     picture_size_y = 1200
@@ -65,6 +66,7 @@ def init_visualize(argv, dims, body, filename, V):
     property1.SetSpecularPower(20)
 
     property2 = vtkProperty()
+    property2.SetColor(color_con)
     property2.SetDiffuse(0.7)
     property2.SetSpecular(0.4)
     property2.SetSpecularPower(20)
@@ -80,22 +82,14 @@ def init_visualize(argv, dims, body, filename, V):
                 sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetProperty(property1)
                 sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetPosition(i, j, z)
 
-                # В зависимости от скорости отрисовываем различным цветом
-                eps = 1e-15 # Константа для сравнения вещественных чисел
-                W = (v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[dims[1]*dims[2]*i+dims[2]*j+z] ** 2)**0.5  # Модуль скорости
-                if W > eps:
-                    con[dims[1]*dims[2]*i+dims[2]*j+z].SetHeight(1)
-                    if W / V < 1:
-                        property2.SetColor((W / V, 0.0, 0.0))
-                    else:
-                        property2.SetColor((1.0, 0.0, 0.0))
+                if v1[dims[1]*dims[2]*i+dims[2]*j+z]**2 + v2[dims[1]*dims[2]*i+dims[2]*j+z]**2 + v3[dims[1]*dims[2]*i+dims[2]*j+z]**2 > 0:
+                    con[dims[1] * dims[2] * i + dims[2] * j + z].SetHeight(1)
                 else:
                     con[dims[1] * dims[2] * i + dims[2] * j + z].SetHeight(0)
-                    property2.SetColor((1.0, 1.0, 1.0))
                 conActor[dims[1] * dims[2] * i + dims[2] * j + z] = vtkActor()
                 conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetMapper(conMapper[dims[1] * dims[2] * i + dims[2] * j + z])
-                conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetPosition(i, j, z)
                 conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetProperty(property2)
+                conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetPosition(i, j, z)
 
                 con[dims[1]*dims[2]*i+dims[2]*j+z].SetDirection(v1[dims[1]*dims[2]*i+dims[2]*j+z], v2[dims[1]*dims[2]*i+dims[2]*j+z], v3[dims[1]*dims[2]*i+dims[2]*j+z])
                 conMapper[dims[1]*dims[2]*i+dims[2]*j+z].SetInputConnection(con[dims[1]*dims[2]*i+dims[2]*j+z].GetOutputPort())
