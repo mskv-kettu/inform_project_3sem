@@ -6,17 +6,9 @@ class Body:
     def __init__(self, initdata, materialdata, X, Y, Z):  # X, Y, Z -- длина, ширина, высота образца
         with open(initdata) as f:  # Считывание размера сетки из файла
             dims = np.array(f.readline().split(), dtype=int)
-            v_conditions = f.readline().split()
-            v_conditions[0:3] = [int(e) for e in v_conditions[0:3]]
-            v_conditions[3:6] = [float(e) for e in v_conditions[3:6]]
         with open(materialdata) as f:  # Считывание модулей среды
             mods = np.array(f.readline().split(), dtype=float)
         self.mp = np.array([[[Node(*mods) for i in range(dims[2])] for j in range(dims[1])] for k in range(dims[0])])  # Трёхмерная Сетка
-
-        self.mp[v_conditions[0], v_conditions[1], v_conditions[2]].V[0] = v_conditions[3] # условия на сетку, пока в 1 точке и только скорость
-        self.mp[v_conditions[0], v_conditions[1], v_conditions[2]].V[1] = v_conditions[4]
-        self.mp[v_conditions[0], v_conditions[1], v_conditions[2]].V[2] = v_conditions[5]
-
         self.M, self.N, self.K = np.shape(self.mp)[2], np.shape(self.mp)[1], np.shape(self.mp)[0]  # Размеры сетки
         self.h = np.array([X / self.M, Y / self.N, Z / self.K], dtype=np.float64)  # Размеры ячеек
         self.dims = dims
@@ -74,7 +66,8 @@ class Body:
                                                           + (PrevStep[k, j + 1, i].V[2] - PrevStep[k, j - 1, i].V[2]) / (2 * self.h[1])) * \
                                                     self.mp[k, j, i].mu
 
-    def GarmonicBorderTension(self, A, omega, t): # Случай изменения напряжений на одной из границ по гармоническому закону
+    def GarmonicBorderTension(self, A, omega, t):  # Случай изменения напряжений на одной из границ по гармоническому закону
         for j in range(1, self.N - 1):
             for i in range(1, self.M - 1):
                 self.mp[0, j, i].sigma[2] = A * np.cos(omega * t)  # Задаём нормальное напряжение на одной грани, ортог oz
+                #self.mp[j, 0, i].sigma[1] = -A * np.cos(omega * t + 10)  # Задаём нормальное напряжение на одной грани, ортог oy

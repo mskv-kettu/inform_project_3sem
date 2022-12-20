@@ -1,17 +1,19 @@
 import numpy as np
+from math import fabs
 import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
+from vtkmodules.vtkIOImage import vtkPNGWriter
 from vtkmodules.vtkFiltersSources import vtkConeSource, vtkCubeSource, vtkSphereSource, vtkArrowSource
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
     vtkPolyDataMapper,
     vtkProperty,
     vtkRenderWindow,
-    vtkRenderer, vtkRenderWindowInteractor)
+    vtkRenderer, vtkRenderWindowInteractor, vtkWindowToImageFilter)
 
 
-def visualize(argv, dims, body):
+def init_visualize(argv, dims, body, filename, V):
     dt=1
     len_x=dims[0]
     len_y=dims[1]
@@ -31,14 +33,11 @@ def visualize(argv, dims, body):
                 v3[dims[1]*dims[2]*i+dims[2]*j+k] = body.mp[i, j, k].V[2]
     conRadius = 0.05
     sphereRadius = 0.06
-    color_begin=(0.0, 0.0, 1.0)
-    color_next = (1.0, 0.0, 0.0)
-    color_if_big_velocity = (1.0, 1.0, 1.0)
-    color_background = (0.5, 0.5, 1)
-    picture_size_x = 900
-    picture_size_y = 900
-    title="Dislocations"
-    turn_next_points=True
+    color_sphere = (0.0, 0.0, 1.0)
+    color_background = (1, 1, 1)
+    picture_size_x = 1200
+    picture_size_y = 1200
+    title = "Velocity"
 
     # создаём экземпляр vtkConeSource, эти экземпляры могут обрабатывать фильтры
     sphere = vtkSphereSource()
@@ -55,24 +54,23 @@ def visualize(argv, dims, body):
 
     conMapper=[0]*n
     for i in range(n):
-        conMapper[i]=vtkPolyDataMapper()
+        conMapper[i] = vtkPolyDataMapper()
         conMapper[i].SetInputConnection(con[i].GetOutputPort())
 
     #задаём некоторые общие свойства
     property1 = vtkProperty()
-    property1.SetColor(color_begin)
+    property1.SetColor(color_sphere)
     property1.SetDiffuse(0.7)
     property1.SetSpecular(0.4)
     property1.SetSpecularPower(20)
 
     property2 = vtkProperty()
-    property2.SetColor(color_next)
     property2.SetDiffuse(0.7)
     property2.SetSpecular(0.4)
     property2.SetSpecularPower(20)
 
     #создание моделей конусов и шаров
-    sphereActor1 = [0]*n
+    sphereActor1 = [0] * n
     conActor = [0] * n
     for i in range(dims[0]):
         for j in range(dims[1]):
@@ -82,24 +80,25 @@ def visualize(argv, dims, body):
                 sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetProperty(property1)
                 sphereActor1[dims[1]*dims[2]*i+dims[2]*j+z].SetPosition(i, j, z)
 
-
-                if v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 <= 0.000001:
-                    continue
+                # В зависимости от скорости отрисовываем различным цветом
+                eps = 1e-15 # Константа для сравнения вещественных чисел
+                W = (v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[dims[1]*dims[2]*i+dims[2]*j+z] ** 2)**0.5  # Модуль скорости
+                if W > eps:
+                    con[dims[1]*dims[2]*i+dims[2]*j+z].SetHeight(1)
+                    if W / V < 1:
+                        property2.SetColor((W / V, 0.0, 0.0))
+                    else:
+                        property2.SetColor((1.0, 0.0, 0.0))
                 else:
-                    print(v1[dims[1]*dims[2]*i+dims[2]*j+z], v2[dims[1]*dims[2]*i+dims[2]*j+z], v3[dims[1]*dims[2]*i+dims[2]*j+z])
-                con[dims[1]*dims[2]*i+dims[2]*j+z].SetHeight(((v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[
-                    dims[1]*dims[2]*i+dims[2]*j+z] ** 2) ** 0.5)*dt)
+                    con[dims[1] * dims[2] * i + dims[2] * j + z].SetHeight(0)
+                    property2.SetColor((1.0, 1.0, 1.0))
+                conActor[dims[1] * dims[2] * i + dims[2] * j + z] = vtkActor()
+                conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetMapper(conMapper[dims[1] * dims[2] * i + dims[2] * j + z])
+                conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetPosition(i, j, z)
+                conActor[dims[1] * dims[2] * i + dims[2] * j + z].SetProperty(property2)
+
                 con[dims[1]*dims[2]*i+dims[2]*j+z].SetDirection(v1[dims[1]*dims[2]*i+dims[2]*j+z], v2[dims[1]*dims[2]*i+dims[2]*j+z], v3[dims[1]*dims[2]*i+dims[2]*j+z])
                 conMapper[dims[1]*dims[2]*i+dims[2]*j+z].SetInputConnection(con[dims[1]*dims[2]*i+dims[2]*j+z].GetOutputPort())
-
-                conActor[dims[1]*dims[2]*i+dims[2]*j+z] = vtkActor()
-                conActor[dims[1]*dims[2]*i+dims[2]*j+z].SetMapper(conMapper[dims[1]*dims[2]*i+dims[2]*j+z])
-                conActor[dims[1]*dims[2]*i+dims[2]*j+z].SetProperty(property2)
-                conActor[dims[1]*dims[2]*i+dims[2]*j+z].SetPosition(i + v1[dims[1]*dims[2]*i+dims[2]*j+z]*dt / 2, j + v2[dims[1]*dims[2]*i+dims[2]*j+z]*dt / 2,
-                                                        z + v3[dims[1]*dims[2]*i+dims[2]*j+z]*dt / 2)
-
-                if (v1[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v2[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 + v3[dims[1]*dims[2]*i+dims[2]*j+z] ** 2 > 1):
-                    conActor[dims[1]*dims[2]*i+dims[2]*j+z].GetProperty().SetColor(color_if_big_velocity)
 
     ren1 = vtkRenderer()
     #добавление моделей на изображение
@@ -122,10 +121,22 @@ def visualize(argv, dims, body):
     camera = ren1.GetActiveCamera()
     camera.SetViewUp(0, 0, 1)
     camera.SetFocalPoint(0, 0, 0)
-    camera.SetPosition(4.5, 4.5, 2.5)
+    camera.SetPosition(10, 10, 10)
     ren1.ResetCamera()
     camera.Dolly(1.0)
     ren1.ResetCameraClippingRange()
 
     renWin.Render()
-    iren.Start()
+    #iren.Start()
+
+    # Перевод окна в картинку формата PNG
+    windowto_image_filter = vtkWindowToImageFilter()
+    windowto_image_filter.SetInput(renWin)
+    windowto_image_filter.SetScale(1)  # image quality
+    windowto_image_filter.SetInputBufferTypeToRGBA()
+    windowto_image_filter.Update()
+
+    writer = vtkPNGWriter()
+    writer.SetInputConnection(windowto_image_filter.GetOutputPort())
+    writer.SetFileName(filename)
+    writer.Write()
