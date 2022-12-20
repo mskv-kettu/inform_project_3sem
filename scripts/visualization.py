@@ -1,7 +1,5 @@
 import numpy as np
-from math import fabs
 import vtkmodules.vtkInteractionStyle
-# noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkIOImage import vtkPNGWriter
 from vtkmodules.vtkFiltersSources import vtkConeSource, vtkCubeSource, vtkSphereSource, vtkArrowSource
@@ -13,7 +11,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer, vtkRenderWindowInteractor, vtkWindowToImageFilter)
 
 
-def init_visualize(argv, dims, body, filename, V):
+def init_visualize(argv, dims, body, filename):
     dt=1
     len_x=dims[0]
     len_y=dims[1]

@@ -14,7 +14,6 @@ Body = Body('init_data.txt', 'material_data.txt', A, B, C)
 dt = 0.5 * Body.h[0] / c  # Шаг по времени в секундах
 omega = c / Body.h[0] * 0.5  # Частота гармонического напряжения
 Ampl = 10000  # Амлитуда гармонического напряжения в ньютонах на метр
-V = 1e-3  # Константа скорости для отрисовки в зависимости от модуля
 
 for i in range(N):
     PrevStep = copy.deepcopy(Body.mp)
@@ -22,13 +21,13 @@ for i in range(N):
     Body.Velocity(PrevStep, dt)
     Body.Tension(PrevStep, dt)
     # Сохраняем кадры для дальнейшей визуализации
-    filename = f'C:\\Users\\vladi\Documents\\PyCharmProjects\\Python-3term\\3term_Project\\images\\step{i}'
-    init_visualize(sys.argv, Body.dims, Body, filename, V)
+    filename = f'C:\\Users\\vladi\Documents\\PyCharmProjects\\Python-3term\\3term_Project\\images\\step{i}.png'
+    init_visualize(sys.argv, Body.dims, Body, filename)
 
 # Создание гифки
 frames = []
 for n in range(N):
-    frame = Image.open(f'C:\\Users\\vladi\Documents\\PyCharmProjects\\Python-3term\\3term_Project\\images\\step{n}')
+    frame = Image.open(f'C:\\Users\\vladi\Documents\\PyCharmProjects\\Python-3term\\3term_Project\\images\\step{n}.png')
     frames.append(frame)
 
 frames[0].save(
